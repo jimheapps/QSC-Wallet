@@ -1,0 +1,1 @@
+meteor --settings devnet.json --port 3002

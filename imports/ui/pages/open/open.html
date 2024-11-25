@@ -1,0 +1,151 @@
+<template name="appAddressOpen">
+
+<h4 id="viewWallet" class="ui header pageHeader">
+  <i class="tiny unlock icon"></i>
+  <div class="content">
+    Open Wallet
+  </div>
+</h4>
+
+<div class="ui segment pageSegment">
+  <div class="ui bottom attached segment active">
+    <div class="ui form">
+      <div class="field">
+        <label>Wallet Seed / File</label>
+        <div class="ui action center aligned input"  id="addressFields" style="margin-bottom: 20px;">
+          <button id="eye" class="ui grey icon button">
+              <i class="eye icon" id="eyeicon"></i>
+            </button>
+          <input type="file" id="walletFile" accept="text/json" name="walletFile[]" style="width: 50%"/>
+          <input type="password" id="walletCode" name="walletCode" autocomplete="off" style="width: 50%;display: none;" />
+
+          <select id="walletType" class="ui compact selection dropdown" style="width: 160px !important;">
+            <option value="file">Wallet File</option>
+            <option value="mnemonic">Mnemonic Phrase</option>
+            <option value="hexseed">Hexseed</option>
+            {{#if isNotWindowsNotElectron}}<option value="ledgernano">Ledger Nano</option>{{/if}}
+          </select>
+        </div>
+        {{#if isWindowsNotElectron}}<p>To use a Ledger Nano device on Windows, download the desktop wallet from https://theqrl.org</p>{{/if}}
+      </div>
+
+      <div id="passphraseArea">
+        <div class="field">
+          <label>Passphrase (Optional for Secure Wallet Files)</label>
+          <div class="ui left icon input">
+            <input type="password" id="passphrase" >
+            <i class="lock icon"></i>
+          </div>
+        </div>
+        <p><i>This passphrase decrypts the sensitive information contained in your wallet file, including your address, hexseed and mnemonic phrase. Only enter a password if you've selected a secure wallet file.</i></p>
+        <br />
+      </div>
+
+      <div id="ledgerArea" style="display: none;">
+        <div id="ledgerRefreshButton" class="ui huge primary button red">Open Ledger Nano</div>
+      </div>
+
+      <div id="unlockButton" class="ui huge primary button red">Unlock Wallet</div>
+    </div>
+  </div>
+
+  <div id="unlocking" style="display: none;">
+    <div class="ui icon message">
+      <i class="notched circle loading icon"></i>
+      <div class="content">
+        <div class="header">
+          Just a moment
+        </div>
+        <p>Unlocking wallet...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="readingLedger" style="display: none;">
+    <div class="ui icon message">
+      <i class="notched circle loading icon"></i>
+      <div class="content">
+        <div class="header">
+          Just a moment
+        </div>
+        <p>Reading from Ledger Device...</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="unlockError" style="display: none;">
+    <div class="ui red segment">
+      <h4>Error!</h4>
+      <p>There was an error unlocking the wallet. Please refresh this page and try again.</p>
+    </div>
+  </div>
+
+  <div id="noWalletFileSelected" style="display: none;">
+    <div class="ui red segment">
+      <h4>Error!</h4>
+      <p>Either your wallet file is invalid or it is encrypted and you forgot to enter its passphrase.</p>
+    </div>
+  </div>
+
+  <div id="ledgerReadError" style="display: none;">
+    <div class="ui red segment">
+      <h4>Error!</h4>
+      <p>There was an error connecting to your Ledger device. Please reconnect your device to your computer, unlock it, open the QRL app and try again.</p>
+    </div>
+  </div>
+
+  <div id="ledgerUninitialisedError" style="display: none;">
+    <div class="ui yellow segment">
+      <h4>Device Uninitialised!</h4>
+      <p>You have not initialised your QRL XMSS tree on your Ledger device yet! In the QRL App on your Ledger Device, scroll down to 'Init Device' and press both buttons. This will generate an address and associated XMSS tree on your device. This process takes approximately 45 minutes. You can track the progress on your Ledger Device. When complete, ensure you have the QRL App on your Ledger Device opened and come back here and click Open Ledger again.</p>
+    </div>
+  </div>
+
+  <div id="ledgerKeysGeneratingError" style="display: none;">
+    <div class="ui yellow segment">
+      <h4>Device Generating Keys!</h4>
+      <p>Your Ledger Device is currently generating an XMSS tree. You cannot use the wallet until this process has completed. You can track the progress both your Ledger Device and below.</p>
+      <div class="ui active progress" id="ledgerKeyGenerationProgressBar">
+        <div class="bar">
+          <div class="progress"></div>
+        </div>
+        <div class="label">Generating Keys</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ledgerKeysGeneratingComplete" style="display: none;">
+    <div class="ui green segment">
+      <h4>Device Ready!</h4>
+      <p>Your Ledger Device is ready! Click Open Device to view you wallet.</p>
+    </div>
+  </div>
+
+  <div id="ledgerKeysGeneratingDeviceError" style="display: none;">
+    <div class="ui yellow segment">
+      <h4>Error Generating Keys!</h4>
+      <p>There was a problem while monitoring the Ledger devices key generation process, possibly the device was disconnected. Please reconnect the device, unlock it, open the QRL app, rerun the 'Init Device' function and click Open Ledger again.</p>
+    </div>
+  </div>
+
+  <div class="small ui modal" id="updateWalletFileFormat">
+    <div class="header">Warning</div>
+    <div class="content">
+      <div class="ui warning icon message">
+        <i class="warning icon"></i>
+        <div class="content">
+          <div class="header">
+            Update your wallet file
+          </div>
+          <p>Your existing wallet file format is now deprecated to a more secure wallet which is fully encrypted. Previously your bech32 address and public key were not encrypted. To improve privacy from unwanted eyes, we suggest upgrading to the new more secure encrypted wallet file by clicking the green button below.</p>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="ui approve button green">Update wallet file.</div>
+      <div class="ui cancel red button plain">Ignore Warning</div>
+    </div>
+  </div>
+</div>
+
+</template>

@@ -1,0 +1,123 @@
+<template name="appTokenCreationResult">
+
+<h4 class="ui header pageHeader">
+  <i class="tiny tags icon"></i>
+  <div class="content">
+    Token Creation Result
+  </div>
+</h4>
+
+
+<div id="transactionComplete" class="ui red segment pageSegment">
+
+
+  <h4 class="ui horizontal divider header">
+    <i class="tags icon"></i>
+    Token Details
+  </h4>
+
+  <div class="ui items">
+    <div class="item">
+      <div class="image">
+        {{> QRCode text=transactionHash size="128px" color="#FFF"}}
+      </div>
+      <div style="color: #fff;" class="content">
+        {{#if isNFT}}
+          {{#if verifiedProvider}}
+          <i style="color: #fff;" class="ui certificate icon" title="Verified NFT Provider"></i>Verified NFT Provider - {{detailsNFT.name}}
+          {{else}}
+          <i style="color: #fff;" class="ui warning icon" title="Unverified NFT Provider"></i>Unverified NFT Provider (0x{{detailsNFT.id}})
+          {{/if}}
+        {{else}}
+        <a class="header">{{tokenDetails.name}} ({{tokenDetails.symbol}})</a>
+        {{/if}}
+        <div class="meta">
+          <span>Token Hash <a  id="confirmedTokenHash" class="ui purple label" target="_blank" href="{{nodeExplorerUrl}}/tx/{{transactionHash}}">{{transactionHash}}</a></span>
+        </div>
+        <div class="description">
+          <p></p>
+        </div>
+        <div style="color: #fff;" class="wordBreak extra">
+          {{#if isNFT}}
+            Creator: {{tokenDetails.owner}}<br />
+            Provider ID: 0x{{detailsNFT.id}}<br />
+            Hash: {{detailsNFT.hash}}<br />
+          {{else}}
+            Owner: {{tokenDetails.owner}}<br />
+            Decimals: {{tokenDetails.decimals}}
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h4 class="ui horizontal divider header">
+    <i class="users icon"></i>
+    {{#if isNFT}}
+    Initial NFT Owner
+    {{else}}
+    Initial Token Holders
+    {{/if}}
+  </h4>
+
+  <div class="ui relaxed divided list">
+  {{#each tokenHolders}}
+    <div class="item">
+      <i style="color: #fff;" class="large user middle aligned icon"></i>
+      <div class="content">
+        <a class="header wordBreak">{{this.address}}</a>
+        {{#if isNFT}}
+
+        {{else}}
+        <div class="description">{{tokenDetails.symbol}}: {{this.amount}}</div>
+        {{/if}}
+      </div>
+    </div>
+  {{/each}}
+  </div>
+
+  <h4 class="ui horizontal divider header">
+    <i class="signal icon"></i>
+    Transaction Status
+  </h4>
+
+  <div class="ui stackable one column grid">
+    <div class="column">
+      <p id="successMessage" style="word-wrap: break-word; word-break: break-all;">
+        Success! Your token has been relayed into the QRL network through the following nodes, and is pending validation.
+      </p>
+    </div>
+  </div>
+
+  <div class="ui mini horizontal divided list">
+  {{#each transactionRelayedThrough}}
+    <div class="item">
+      <i class="checkmark icon green"></i>
+      <div class="content">
+        <div class="header">{{this}}</div>
+      </div>
+    </div>
+  {{/each}}
+  </div>
+
+  <div id="relaying" class="ui icon message">
+    <br /><br />
+    <i class="notched circle loading icon"></i>
+    <div class="content">
+      <div id="loadingHeader" class="header">
+        Just a moment
+      </div>
+      <p id="finalTxnStatus">Transaction Status: {{transactionStatus}}</p>
+    </div>
+  </div>
+
+  <div class="ui stackable one column grid">
+    <div class="column">
+      <button class="ui mini button jsonclick">Raw Transaction Details <i class="down angle icon"></i></button>
+      <div class="ui raised segment jsonbox json unbreakable" style="display: none"></div>
+    </div>
+  </div>
+  
+</div>
+
+</template>

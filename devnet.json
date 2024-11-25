@@ -1,0 +1,23 @@
+{
+  "public" :{
+    "defaultNetworks": [
+      {
+        "id": "devnet",
+        "name": "Devnet",
+        "disabled": "",
+        "explorerUrl": "127.0.0.1:3000",
+        "type": "both",
+        "healthy": false,
+        "nodes": [
+          {
+            "id": "devnet",
+            "grpc": "127.0.0.1:19009",
+            "state": false,
+            "height": 0
+          }
+        ]
+      }
+    ]
+  },
+  "allowUnchecksummedNodes": true
+}

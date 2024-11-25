@@ -1,0 +1,34 @@
+<template name="appAddressClose">
+
+<h2 id="createWallet" class="ui pageHeader header">
+  <i class="tiny lock icon"></i>
+  <div class="content">
+    Wallet has been closed
+  </div>
+</h2>
+
+<div class="ui segment pageSegment">
+  <h2 id="closeWallet" class="ui center aligned icon header">
+  	<i class="circular lock icon"></i>
+  </h2>
+</div>
+
+<div class="small ui modal" id="closedWithError">
+  <div class="header">Ledger XMSS Tree Changed</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+
+        </div>
+        <p>The XMSS tree on the Ledger device has changed.  Please re-open the wallet to use functions for this XMSS tree.</p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui green approve button">OK</div>
+  </div>
+</div>
+
+</template>

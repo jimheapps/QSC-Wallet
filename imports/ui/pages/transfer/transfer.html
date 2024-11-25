@@ -1,0 +1,1253 @@
+<template name="appTransfer">
+
+<div class="small ui modal" id="verifyLedgerNanoAddressModal">
+  <div class="header">Ledger Nano S Address Verification</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div>
+        <div class="header">
+          The address below should be displayed on your Ledger Nano S device.
+        </div>
+        <p class="wordBreak"><strong>Address:</strong> {{transferFrom.address}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve red button">Close</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="cancelTransactionGenerationWarning">
+  <div class="header">Whoa there buddy!!</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          Are you sure?
+        </div>
+        <p>Please confirm you wish to cancel generating this transaction.</p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Yes, cancel this transaction!</div>
+    <div class="ui cancel red button plain">Cancel</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="cancelWaitingForTransactionWarning">
+  <div class="header">Whoa there buddy!!</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          Are you sure?
+        </div>
+        <p>This transaction has not been confirmed on the network just yet! Leaving this page now may show incorrect balances on other pages. It is advised that you wait for the transaction to confirm before leaving this page.</p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">I understand, leave now anyway.</div>
+    <div class="ui cancel red button plain">Cancel</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="lowOtsKeyWarning">
+  <div class="header">OTS Keys Running Low!</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          Warning: Your OTS Keys are running low.
+        </div>
+        <p>You only have <strong>{{otsKeysRemaining}}</strong> OTS Keys remaining. When you have used all of these, you will no longer be able to send QRL or Tokens from this wallet.</p>
+        <p>It is strongly suggested that you create a new wallet, and move all your QRL and Tokens to it to ensure you do not lose access to your funds.</p>
+        <p><a href="https://docs.theqrl.org/developers/ots/" target="_blank">Click here to learn what OTS Keys are.</a></p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="zeroBytesAddressWarning">
+  <div class="header">You are using a test address!</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          Warning: Never send mainnet Quanta to this address!
+        </div>
+        <p>The address you have opened is used for testing Ledger Nano devices, and is not securely seeded. Do not use this address to store or transact with any Quanta.</p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">I understand, I won't use this address!</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="invalidAddress0x">
+  <div class="header">Invalid Address</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          You have attempted to create a transaction to an Ethereum ERC20 address starting with <strong>0x</strong>.
+          <br /><br />
+          This is not possible from the QRL Network. You can only send to addresses that start with a <strong>Q</strong>.
+          <br /><br />
+          Some exchanges still list our ERC20 token, and will provide an <strong>0x</strong> deposit address that is only compatible with the legacy QRL ERC20 token.
+          <br /><br />
+          Please keep this in mind when attempting to transfer your Quanta around.
+        </div>
+        <p></p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="otsKeyReuseDetected">
+  <div class="header">OTS Key Reuse</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          You have attempted to create a transaction using an OTS Key Index that has previously been used on the QRL Network.
+          <br /><br />
+          Please recreate your transaction using a unique OTS Key Index.
+        </div>
+        <p></p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="ledgerOtsKeyReuseDetected">
+  <div class="header">OTS Key Reuse</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          You have attempted to create a transaction using an OTS Key Index that has previously been used on the QRL Network.
+          <br /><br />
+          You need to update your Ledgers XMSS Index in Tools -> Set XMSS Index.
+        </div>
+        <p></p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="maxThreeRecipientsLedger">
+  <div class="header">Max of 3 Recipients</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          Ledger Nanos can only sign up to three recipients per transaction.
+          <br /><br />
+          Please remove some recipients so that you only have up to three per transaction.
+        </div>
+        <p></p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="maxRecipientsReached">
+  <div class="header">Max of 3 Recipients</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          Ledger Nanos can only sign up to three recipients per transaction.
+          <br /><br />
+          You cannot add any more recipients to this transaction.
+        </div>
+        <p></p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="invalidNodeResponse">
+  <div class="header">WARNING - Bad Response</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          WARNING - The node you've requested this transaction from replied with bad data that doesn't match your intended transaction parameters.
+          <br /><br />
+          This transaction has been cancelled automatically to protect your funds.
+          <br /><br />
+          Please report this issue through a Github issue, or directly to the QRL Team via email: info@theqrl.org
+        </div>
+        <p></p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="ledgerNotSupported">
+  <div class="header">Ledger Not Supported</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div class="content">
+        <div class="header">
+          Ledger Nano not Supported for Tokens
+        </div>
+        <p>Sorry, Ledger Nano support for Token Creation and Token Transfers is still being developed and tested. We will enable this functionality at a later stage.</p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve green button">Okay</div>
+  </div>
+</div>
+
+<div class="small ui modal" id="ledgerConfirmationModal">
+  <div class="header">Send {{transactionConfirmationAmount}} Quanta?</div>
+  <div class="content">
+    <div class="ui stackable grid">
+      <div class="four wide column">
+        <img class="svg" src="/img/ledger-nano.svg" />
+      </div>
+      <div class="twelve wide column">
+        <div class="description pl-10">
+          <p>Your transaction requires confirmation on your Ledger Nano S device. Check the details on the Ledger match those displayed below then click the sign option on your device:</p>
+          <div class="ui container">
+            <table class="ui stackable table">
+              <tr>
+                <td>
+                  <div class="ui label fw">FROM</div>
+                </td>
+                <td class="no-wrap">{{transferFrom.address}}</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="ui label fw">TO</div>
+                </td>
+                <td class="no-wrap">
+                  {{#each transactionConfirmation.outputs}}
+                    {{this.amount}} {{this.name}} -> {{# if bech32}}{{this.address_b32}}{{else}}{{this.address_hex}}{{/if}}<br /><br />
+                  {{/each}}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="ui label fw">TOTAL</div>
+                </td>
+                <td class="no-wrap">{{transactionConfirmationAmount}} Quanta</td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="ui label fw">FEE</div>
+                </td>
+                <td class="no-wrap">{{transactionConfirmationFee}} Quanta</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div id="awaitingLedgerConfirmation" class="ui inverted segment">
+      <h3>Awaiting confirmation on Ledger device
+        <div class="ui active inline loader"></div>
+      </h3>
+    </div>
+
+    <div id="signOnLedgerRejected" class="ui inverted segment" style="display: none;">
+      <h3>The Transaction has been rejected on Ledger device</h3>
+      <h3 id="noRemainingSignatures" style="display: none;">There are no remaining signatures to sign a transaction with!</h3>
+    </div>
+
+    <div id="signOnLedgerTimeout" class="ui inverted segment" style="display: none;">
+      <h3>Timed out waiting for response from Ledger Nano. To save an OTS Key, you should reject the transaction on your Ledger and try again.</h3>
+    </div>
+
+    <div id="signOnLedgerError" class="ui inverted segment" style="display: none;">
+      <h3>Error communicating with Ledger Nano. To save an OTS Key, you should reject the transaction on your Ledger and try again.</h3>
+    </div>
+
+    <p id="ledgerHasConfirmed" style="display:none;">Transaction signed on Ledger <i class="ui check icon"></i></p>
+
+    <div class="ui positive confirm button" id="relayLedgerTxnButton" style="display:none;">Send transaction</div>
+    <div class="ui negative button">Cancel</div>
+  </div>
+</div>
+
+{{> recoverySeedModal }}
+
+<!-- This has now been moved to body page -->
+<!-- <h3 class="ui header pageHeader">
+  <div id="walletAddress" class="content wordBreak">
+    {{transferFrom.address}}
+  </div>
+</h3>
+<br /><br /> -->
+
+<div class="ui left aligned" id="transferForm">
+  <div class="ui stackable two column grid">
+    <div class="six wide column">
+
+      <!-- Send/Receive Section -->
+      <div id="sendReceiveTabs" class="ui top attached tabular menu">
+        <a class="item active" data-tab="send">Send</a>
+        <a class="item" data-tab="receive">Receive</a>
+        <a class="item" data-tab="tokenBalances">Tokens</a>
+        <a class="item" data-tab="nftBalances">NFTs</a>
+      </div>
+      <div class="ui bottom attached tab segment active" data-tab="send">
+
+        <!-- Generate Transaction Area -->
+        <div id="generateTransactionArea">
+          <form id="generateTransactionForm" class="ui form">
+
+            <div id="transferRecipients">
+              <div>
+                <div class="field">
+                  <label>
+                    <p style="text-align:left;">
+                      Recipient
+                      <span style="float:right;">
+                       <a id="showMessageField">Add message</a>
+                      </span>
+                  </p>
+                  </label>
+                  <input type="text" id="to_1" name="to[]" placeholder="Recipient Address" autocomplete="off">
+                </div>
+                <div class="field" style="display: none;" id="messageField">
+                  <label>                    <p style="text-align:left;">
+                    Message
+                    <span style="float:right;">
+                     <a id="clearMessageField">Remove message</a>
+                    </span>
+                </p></label>
+                  <input type="text" id="message" name="message" placeholder="Message" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label>Amount</label>
+                  <div class="ui action center aligned input"  id="amountFields" style="width: 100%; margin-bottom: 20px;">
+                    <input type="text" id="amounts_1" name="amounts[]" autocomplete="off">
+
+                    <select id="amountType" class="ui compact selection dropdown">
+                      <option value="quanta">Quanta</option>
+                      {{#each tokensHeld}}
+                      {{#if heldTokenIsNFT}}
+                      <option value="token-{{this.hash}}-{{this.decimals}}">NFT ({{this.shortHash}})</option>
+                      {{else}}
+                      <option value="token-{{this.hash}}-{{this.decimals}}">{{this.symbol}} ({{this.shortHash}})</option>
+                      {{/if}}
+                      {{/each}}
+                    </select>
+                  </div>
+                  <br />
+                  <div class="ui teal label">Balance: {{balanceAmount}} {{balanceSymbol}}</div>
+                </div>
+                <br />
+              </div>
+
+            </div>
+
+            <!-- Additional Recipients -->
+            <div class="field">
+              <button id="addTransferRecipient" class="ui small button sky" style="width: 100%">
+                <i class="add user icon"></i>
+                Add Another Recipient
+              </button>
+            </div>
+
+            <div class="field">
+              <label>Fee (In Quanta)</label>
+              <input type="text" id="fee" value="0.001" autocomplete="off">
+            </div>
+            <div class="field">
+              <label>OTS Key Index</label>
+              <input type="text" id="otsKey" placeholder="0" value="{{otsKeyEstimate}}" autocomplete="off" {{ledgerWalletDisabled}}>
+            </div>
+
+
+            <div class="field">
+              <div class="ui warning icon message" style="display: inline-flex;">
+                <i class="warning icon"></i>
+                <div class="content">
+                  <div class="header">
+                    OTS Key Index Warning
+                  </div>
+                  {{#if isLedgerWallet}}
+                  <p>The <strong>OTS (One Time Signature)</strong> Key Index in the field above is based on data provided by your Ledger Device. You should <b>never</b> re-use the same OTS Key for more than 1 transaction. As you are using a Ledger Device, you can rest assured your Device will keep track of all used signatures for you. As a result, you cannot change the OTS Key that will be used to sign this transaction as the Ledger Device will automatically use the next one in line.</p>
+                  {{else}}
+                  <p>The <strong>OTS (One Time Signature)</strong> Key Index in the field above is estimated based on data provided by the QRL node you're connected to. You should <b>never</b> re-use the same OTS Key for more than 1 transaction. If you are unsure, it is safest to write down all used OTS Key Indexes, and store them in a safe place.</p>
+                  {{/if}}
+                </div>
+              </div>
+            </div>
+
+            <div class="ui stackable one column grid">
+              <div class="column center aligned">
+                <button id="generateTransaction" class="ui huge primary button red" style="width: 100%">Confirm</button>
+              </div>
+            </div>
+
+            <div id="generating" class="ui icon message" style="display: none;">
+              <br /><br />
+              <i class="notched circle loading icon"></i>
+              <div class="content">
+                <div class="header">
+                  Just a moment
+                </div>
+                <p>Generating transaction...</p>
+              </div>
+            </div>
+          </form>
+        </div>
+
+
+        <!-- Confirm Transaction Area -->
+        <div id="confirmTransactionArea" style="display: none;">
+
+          <div class="ui icon message transactionRecord">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Confirm Send
+              </div>
+            </div>
+            <div class="floatright">
+              {{transactionConfirmationAmount}} Quanta
+            </div>
+          </div>
+          {{#if includesMessage}}
+          <form>
+            <div class="field">
+              <label>Message</label>
+              <div class="ui visible message">
+                {{messageText}}
+              </div>
+            </div>
+          </form>
+          <p>&nbsp;</p>
+          {{/if}}
+          <form>
+            <div class="field">
+              <label>Recipients</label>
+              <div class="ui visible message">
+                <p class="wordBreak">
+                  {{#each transactionConfirmation.outputs}}
+                    {{this.amount}} {{this.name}} -> {{# if bech32}}{{this.address_b32}}{{else}}{{this.address_hex}}{{/if}}<br /><br />
+                  {{/each}}
+                </p>
+              </div>
+            </div>
+
+          </form>
+
+          <h4 class="ui horizontal divider header">
+            <i class="file icon"></i>
+            Transaction Details
+          </h4>
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <span>Fee <a class="ui">{{transactionConfirmationFee}}</a> Quanta</span>
+              <br />
+              <span>OTS Key Index <a class="ui">{{transactionConfirmation.otsKey}}</a></span>
+            </div>
+          </div>
+
+          <div class="ui stackable one column grid">
+            <div class="column center aligned">
+              <button id="confirmTransaction" class="ui huge primary button red"  style="width: 100%">
+                {{#if isSeedWallet}}
+                  Click to Send
+                {{else}}
+                  Sign with Ledger
+                {{/if}}
+              </button>
+            </div>
+          </div>
+
+          <div id="relaying" class="ui icon message" style="display: none;">
+            <br /><br />
+            <i class="notched circle loading icon"></i>
+            <div class="content">
+              <div class="header">
+                Just a moment
+              </div>
+              <p id="transferRelayingMsg">Your transaction is being relayed into the QRL network...</p>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Confirm Token Transaction Area -->
+        <div id="confirmTokenTransactionArea" style="display: none;">
+          <div class="ui icon message transactionRecord">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Confirm Send
+              </div>
+            </div>
+            <div class="floatright">
+              {{tokenTransferConfirmationAmount}} {{#if confirmationForNFT}}NFT{{else}}{{tokenDetails.symbol}}{{/if}}
+            </div>
+          </div>
+
+          <form>
+            <div class="field">
+              <label>Recipient(s)</label>
+              <div class="ui visible message">
+                <p class="wordBreak">
+                  {{#each tokenTransferConfirmation.outputs}}
+                    {{this.amount}} {{#if confirmationForNFT}}NFT{{else}}{{this.name}}{{/if}} -> {{# if bech32}}{{this.address_b32}}{{else}}{{this.address_hex}}{{/if}}<br /><br />
+                  {{/each}}
+                </p>
+              </div>
+            </div>
+          </form>
+
+          <h4 class="ui horizontal divider header">
+            <i class="file icon"></i>
+            Transaction Details
+          </h4>
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <span>Token Hash <a class="ui wordBreak" target="_blank" href="{{nodeExplorerUrl}}/tx/{{tokenTransferConfirmation.tokenHash}}">{{tokenTransferConfirmation.tokenHash}}</a></span>
+              <br />
+              <span>Fee <a class="ui">{{tokenTransferConfirmation.fee}}</a> Quanta</span>
+              <br />
+              <span>OTS Key Index <a class="ui">{{tokenTransferConfirmation.otsKey}}</a></span>
+            </div>
+          </div>
+
+          <br />
+          <div class="field">
+            <div class="ui warning icon message" style="display: inline-flex;">
+              <i class="warning icon"></i>
+              <div class="content">
+                <div class="header">
+                  Check the Token Hash!
+                </div>
+                <p>Please ensure the token hash above is correct before proceeding with this transaction!</p>
+              </div>
+            </div>
+          </div>
+          <br />
+
+          <div class="ui stackable one column grid">
+            <div class="column center aligned">
+              <button id="confirmTokenTransaction" class="ui huge primary button red"  style="width: 100%">Click to Send</button>
+            </div>
+          </div>
+          
+          <div id="relayingTokenXfer" class="ui icon message" style="display: none;">
+            <br /><br />
+            <i class="notched circle loading icon"></i>
+            <div class="content">
+              <div class="header">
+                Just a moment
+              </div>
+              <p id="tokenTransferRelayingMsg">Your transaction is being relayed into the QRL network...</p>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Transaction Result Area -->
+        <div id="transactionResultArea" style="display: none;">
+
+          <div class="ui icon message transactionRecord">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Sent
+              </div>
+            </div>
+            <div class="floatright">
+              {{transactionConfirmationAmount}} Quanta
+            </div>
+          </div>
+
+          <form>
+            <div class="field">
+              <label>Recipient</label>
+              <div class="ui visible message">
+                <p class="wordBreak">
+                  {{#each transactionConfirmation.outputs}}
+                    {{this.amount}} {{this.name}} -> {{# if bech32}}{{this.address_b32}}{{else}}{{this.address_hex}}{{/if}}<br /><br />
+                  {{/each}}
+                </p>
+              </div>
+            </div>
+          </form>
+
+          <h4 class="ui horizontal divider header">
+            <i class="file icon"></i>
+            Transaction Details
+          </h4>
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <span>Transaction Hash <a id="confirmedTransferTxnHash" href="{{nodeExplorerUrl}}/tx/{{transactionHash}}" target="_blank" class="ui wordBreak">{{transactionHash}}</a></span>
+              <br />
+              <span>Fee <a class="ui">{{transactionConfirmationFee}}</a> Quanta</span>
+              <br />
+              <span>OTS Key Index <a class="ui">{{transactionConfirmation.otsKey}}</a></span>
+            </div>
+          </div>
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <p id="transferSuccessMessage" style="word-wrap: break-word;">
+                Success! Your transaction has been relayed into the QRL network through the following nodes, and is pending validation.
+              </p>
+            </div>
+          </div>
+
+
+          <div class="ui mini horizontal divided list">
+          {{#each transactionRelayedThrough}}
+            <div class="item">
+              <i class="checkmark icon green"></i>
+              <div class="content">
+                <div class="header">{{this}}</div>
+              </div>
+            </div>
+          {{/each}}
+          </div>
+
+          <div id="relaying" class="ui icon message">
+            <br /><br />
+            <i class="notched circle loading icon"></i>
+            <div class="content">
+              <div id="loadingHeader" class="header">
+                Just a moment
+              </div>
+              <p id="transferFinalTxnStatus" class="wordBreak" style="word-wrap: break-word; word-break: break-all;">Transaction Status: {{transactionStatus}}</p>
+            </div>
+          </div>
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <button id="quantaJsonClick" class="ui mini button jsonclick ">Raw Transaction Details <i class="down angle icon"></i></button>
+              <div id="quantaJsonbox" class="ui raised segment jsonbox json unbreakable" style="display: none"></div>
+            </div>
+          </div>
+
+        </div>
+
+
+
+        <!-- Token Transaction Result Area -->
+        <div id="tokenTransactionResultArea" style="display: none;">
+
+          <div class="ui icon message transactionRecord">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Sent
+              </div>
+            </div>
+            <div class="floatright">
+              {{tokenTransferConfirmationAmount}} {{#if confirmationForNFT}}NFT{{else}}{{tokenDetails.symbol}}{{/if}}
+            </div>
+          </div>
+
+          <form>
+            <div class="field">
+              <label>Recipient</label>
+              <div class="ui visible message">
+                <p class="wordBreak">
+                  {{#each tokenTransferConfirmation.outputs}}
+                    {{this.amount}} {{#if confirmationForNFT}}NFT{{else}}{{this.name}}{{/if}} -> {{# if bech32}}{{this.address_b32}}{{else}}{{this.address_hex}}{{/if}}<br /><br />
+                  {{/each}}
+                </p>
+              </div>
+            </div>
+
+          </form>
+
+          <h4 class="ui horizontal divider header">
+            <i class="file icon"></i>
+            Transaction Details
+          </h4>
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <span>Transaction Hash <a id="confirmedTransferTokenTxnHash" href="{{nodeExplorerUrl}}/tx/{{transactionHash}}" target="_blank" class="ui wordBreak">{{transactionHash}}</a></span>
+              <br />
+              <span>Fee <a class="ui">{{tokenTransferConfirmation.fee}}</a> Quanta</span>
+              <br />
+              <span>OTS Key Index <a class="ui">{{tokenTransferConfirmation.otsKey}}</a></span>
+            </div>
+          </div>
+
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <p id="successMessage" style="word-wrap: break-word; word-break: break-all;">
+                Success! Your token transfer has been relayed into the QRL network through the following nodes, and is pending validation.
+              </p>
+            </div>
+          </div>
+
+
+          <div class="ui mini horizontal divided list">
+          {{#each transactionRelayedThrough}}
+            <div class="item">
+              <i class="checkmark icon green"></i>
+              <div class="content">
+                <div class="header">{{this}}</div>
+              </div>
+            </div>
+          {{/each}}
+          </div>
+
+          <div id="relaying" class="ui icon message">
+            <br /><br />
+            <i class="notched circle loading icon"></i>
+            <div class="content">
+              <div id="loadingHeader" class="header">
+                Just a moment
+              </div>
+              <p id="finalTokenXferTxnStatus" class="wordbreak" style="word-wrap: break-word; word-break: break-all;">Transaction Status: {{transactionStatus}}</p>
+            </div>
+          </div>
+
+          <div class="ui stackable one column grid">
+            <div class="column">
+              <button id="tokenJsonClick" class="ui mini button jsonclick ">Raw Transaction Details <i class="down angle icon"></i></button>
+              <div id="tokenJsonbox" class="ui raised segment jsonbox json unbreakable" style="display: none"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      
+      <!-- Receive Section -->
+      <div class="ui bottom attached tab segment" id="receiveTab" data-tab="receive">
+          <form>
+            <div class="field">
+              <h4>Your Public QRL Address</h4>
+              <div class="ui visible message">
+                <p class="wordBreak">{{openedAddress}}</p>
+              </div>
+            </div>
+
+          </form>
+          <br /><br />
+          <div class="ui stackable grid">
+            <div class="sixteen wide column center aligned qr-code-container">
+            </div>
+          </div>
+
+          <div class="ui stackable grid">
+            <div class="sixteen wide column left aligned">
+              <h4>Address Details</h4>
+              <div class="ui label" style="color: #000 !important;">Signature Scheme: {{addressValidation.signatureScheme}}</div>
+              <br /><br />
+              <div class="ui label" style="color: #000 !important;">Tree Height: {{addressValidation.height}}</div>
+              <br /><br />
+              <div class="ui label" style="color: #000 !important;">Total Signatures: {{addressValidation.totalSignatures}}</div>
+              <br /><br />
+              <div class="ui label" style="color: #000 !important;">Hash Function: {{addressValidation.hashFunction}}</div>
+              <br /><br />
+            </div>
+          </div>
+          {{#if isSeedWallet}}
+          <div class="ui stackable grid">
+            <div class="sixteen wide column left aligned">
+              <h4>View Recovery Seed</h4>
+              <div class="column center aligned">
+                <button id="showRecoverySeed" class="ui huge primary button red" style="width: 100%">Click to View</button>
+              </div>
+            </div>
+          </div>
+          {{else}}
+          <div class="ui stackable grid">
+            <div class="sixteen wide column left aligned">
+              <h4>Verify Ledger Nano S Address</h4>
+              <div class="column center aligned">
+                <button id="verifyLedgerNanoAddress" class="ui huge primary button red" style="width: 100%">Click to Verify</button>
+              </div>
+            </div>
+          </div>
+          {{/if}}
+      </div>
+
+      <!-- Token Balances -->
+      <div class="ui bottom attached tab segment" id="tokenBalancesTab" data-tab="tokenBalances">
+        <h2 class="ui header">
+          <div class="content">
+            Token Balances
+          </div>
+        </h2>
+
+        <div id="tokenBalancesLoading" class="ui icon message">
+          <br /><br />
+          <i class="notched circle loading icon"></i>
+          <div class="content">
+            <div class="header">
+              Just a moment
+            </div>
+            <p>Token balances are loading...</p>
+          </div>
+        </div>
+
+        <div class="ui middle aligned divided list">
+          {{#if ownTokens}}
+          {{#each tokensHeld}}
+          {{#if heldTokenIsNFT}}
+
+          {{else}}
+          <div class="item">
+            <i class="large tags middle aligned icon"></i>
+            <div class="content">
+              <p class="header">{{this.name}} ({{this.symbol}})</p>
+              <div class="description"><strong>Balance:</strong> {{this.balance}}</div>
+              <div class="description wordBreak"><strong>Hash:</strong> {{this.hash}}</div>
+            </div>
+          </div>
+          {{/if}}
+          {{/each}}
+          {{else}}
+            No owned tokens added to wallet
+          {{/if}}
+        </div>
+      </div>
+
+      <div class="ui bottom attached tab segment" data-tab="nftBalances">
+        <h2 class="ui header">
+          <div class="content">
+            NFTs
+          </div>
+        </h2>
+
+      <div id="nftBalancesLoading" class="ui icon message">
+          <br /><br />
+          <i class="notched circle loading icon"></i>
+          <div class="content">
+            <div class="header">
+              Just a moment
+            </div>
+            <p>NFTs are loading...</p>
+          </div>
+        </div>
+
+        <div class="ui middle aligned divided list">
+          {{#if ownNFTs}}
+          {{#each tokensHeld}}
+          <div class="item">
+            <i class="large tags middle aligned icon"></i>
+            <div class="content">
+              {{#if heldTokenIsNFT}}
+              <p class="header">
+                {{#if this.nft.providerDetails.known}}
+                <a href="{{this.nft.providerDetails.url}}/{{this.nft.txhash}}">
+                {{this.nft.providerDetails.name}} (0x{{this.nft.id}})</a>
+                <i class="ui certificate icon"></i>Verified Provider
+                {{else}}
+                <i class="ui warning icon"></i>Unverified Provider (0x{{this.nft.id}})
+                {{/if}}
+              </p>
+              <div class="description wordBreak tc-w">
+                <a href="/tx/{{this.nft.txhash}}">{{this.nft.txhash}}</a>
+              </div>
+              {{else}}
+
+              {{/if}}
+            </div>
+            <a href="#" style="display: table-cell;" class="sendNFT" data-txhash="{{this.nft.txhash}}">&nbsp;<i class="large send middle aligned icon"></i></a>
+          </div>
+          {{/each}}
+          {{else}}
+            No NFTs owned
+          {{/if}}
+        </div>
+      </div>
+
+    </div>
+    <div class="ten wide column">
+      
+      <!-- Transaction History -->
+      <h4 class="ui pageHeader header">
+        <div class="content">
+          Transaction History
+        </div>
+      </h4>
+      {{#if loadingTransactions}}
+      <div id="loadingTransactions" class="ui icon message">
+        <br /><br />
+        <i class="notched circle loading icon"></i>
+        <div class="content">
+          <div class="header">
+            Just a moment
+          </div>
+          <p id="relayingMsg">Transaction history loading ...</p>
+        </div>
+      </div>
+      {{/if}}
+      {{#if errorLoadingTransactions}}
+      <div id="errorLoadingTransactions" class="ui icon red message">
+        <br /><br />
+        <i class="warning icon"></i>
+        <div class="content">
+          <div class="header">
+            Error loading transactions
+          </div>
+          <p id="txHistoryError">The wallet could not connect to the selected network</p>
+        </div>
+      </div>
+      {{/if}}
+
+      {{#if addressHasTransactions}}
+        {{#each addressTransactions}}
+          {{#if isTransfer this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            {{#if isMyAddress this.addr_from}}
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            {{else}}
+            <img class="transactionTypeImage" src="/img/icons/receive.svg" />
+            {{/if}}
+            <div class="content">
+              <div class="header">
+                {{#if isMyAddress this.addr_from}}
+                Sent
+                {{else}}
+                Received
+                {{/if}}
+                 | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{#if isMyAddress this.addr_from}}
+                  {{#each this.outputs}}
+                    {{# if bech32}}{{this.address_b32}}{{else}}{{this.address_hex}}{{/if}} - {{this.amount}}<br />
+                  {{/each}}
+                {{else}}
+                  {{# if bech32}}{{this.from_b32}}{{else}}{{this.from_hex}}{{/if}}
+                {{/if}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">{{#if isMyAddress this.addr_from}} {{this.totalTransferred}} {{else}} {{this.thisReceivedAmount}} {{/if}} Quanta &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isTokenCreation this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                {{#if isCreateNFT}}
+                Create NFT - 
+                        {{#if knownProvider}}
+                        <i class="ui certificate icon"></i>
+                        {{/if}}
+                        {{#if knownProvider}}
+                        <a href="{{providerURL}}/{{this.transaction_hash}}">{{providerName}}</a> ({{providerID}})
+                        {{else}}
+                        Unknown provider {{providerID}} |
+                        {{/if}}
+                        {{this.timestamp}}
+                {{else}}
+                Token Creation - {{this.tx.token.name}} ({{this.tx.token.symbol}}) | {{this.timestamp}}
+                {{/if}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+               <a href="/verify-txid/{{this.tx.transaction_hash}}">{{this.symbol}} &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isTokenTransfer this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            {{#if isMyAddress this.addr_from}}
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            {{else}}
+            <img class="transactionTypeImage" src="/img/icons/receive.svg" />
+            {{/if}}
+            <div class="content">
+              <div class="header">
+                {{#if isMyAddress this.addr_from}}
+                Tokens Sent
+                {{else}}
+                Tokens Received
+                {{/if}}
+                - {{this.tx.transfer_token.name}} ({{this.tx.transfer_token.symbol}}) | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{#if isMyAddress this.addr_from}}
+                  {{#each this.outputs}}
+                    {{# if bech32}}{{this.address_b32}}{{else}}{{this.address_hex}}{{/if}} - {{this.amount}}<br />
+                  {{/each}}
+                {{else}}
+                  {{this.from}}
+                {{/if}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">{{#if isMyAddress this.addr_from}} {{tokenTotalTransferred}} {{else}} {{this.thisReceivedAmount}} {{/if}} {{this.symbol}} &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isCoinbaseTxn this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/receive.svg" />
+            <div class="content">
+              <div class="header">
+                Coinbase Received | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{# if bech32}}{{this.from_b32}}{{else}}{{this.from_hex}}{{/if}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">{{this.amount}} Quanta &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isSlaveTxn this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Slave Transaction | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">{{this.amount}} Quanta &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isLatticePKTxn this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Lattice Public Key | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">View Transaction &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isCreateMultiSigTxn this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Multisig Create | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">View Transaction &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isSpendMultiSigTxn this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Multisig Spend | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">View Transaction &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isVoteMultiSigTxn this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Multisig Vote | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">View Transaction &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isMessageTxn this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Message | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">View Transaction &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+          {{#if isDocumentNotarisation this.tx.transactionType}}
+          <div class="ui icon message transactionRecord" data-txhash="{{this.tx.transaction_hash}}">
+            <img class="transactionTypeImage" src="/img/icons/send.svg" />
+            <div class="content">
+              <div class="header">
+                Document Notarisation | {{this.timestamp}}
+              </div>
+              <p class="transactionAddress">
+                {{this.tx.transaction_hash}}
+              </p>
+            </div>
+            <div class="floatright">
+              <a href="/verify-txid/{{this.tx.transaction_hash}}">View Transaction &gt;</a>
+            </div>
+          </div>
+          {{/if}}
+
+        {{/each}}
+
+        {{#if pagination}}
+        <table class="ui striped table">
+          <tfoot>
+              <tr><th colspan="7">
+                <div class="ui grid">
+                  <div class="ten wide column">
+                <div class="ui right labeled fluid input">
+                  <label for="paginator" class="ui label">Page </label>
+                  <input type="text" placeholder="{{currentPage}}" id="paginator">
+                  <div class="ui label"> of {{totalPages}}</div>
+                </div>
+              </div>
+              <div class="row column">
+                <div class="ui right floated pagination menu">
+                  {{#if pback}}
+                  <a qrl-data="back" class="icon item">
+                    <i qrl-data="back" class="left chevron icon"></i>
+                  </a>
+                  {{/if}}
+                  {{#each pages}}
+                  <a class="item {{isActive}}">{{this.number}}</a>
+                  {{/each}}
+                  {{#if pforward}}
+                  <a qrl-data="forward" class="icon item">
+                    <i qrl-data="forward" class="right chevron icon"></i>
+                  </a>
+                  {{/if}}
+                </div>
+              </div>
+            </div>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+        {{/if}}
+
+      {{else}}
+        <div id="noTransactionsFound" style="display: none;" class="ui icon message">
+          <br /><br />
+          <div class="content">
+            <div class="header">
+              No transactions found
+            </div>
+          </div>
+        </div>
+      {{/if}}
+    </div>
+  </div>
+</div>
+
+<div id="transactionGenFailed" class="ui red segment pageSegment" style="display: none;">
+  <h4>Transaction Generation Failed</h4>
+  <p style="word-wrap: break-word; word-break: break-all;">Error: {{transactionGenerationError}}</p>
+</div>
+
+</template>
+
+<template name="recoverySeedModal">
+  <div class="small ui modal" id="recoverySeedModal">
+  <div class="header">Wallet Recovery Seed</div>
+  <div class="content">
+    <div class="ui warning icon message">
+      <i class="warning icon"></i>
+      <div>
+        <div class="header">
+          Warning: Keep this information private at all times!
+        </div>
+        <p class="wordBreak"><strong>Mnemonic Phrase:</strong> {{recoverySeed.mnemonic}}</p>
+        <p class="wordBreak"><strong>Hexseed:</strong> {{recoverySeed.hexseed}}</p>
+        <p class="wordBreak"><strong>Private key QR:</strong><div id="recQR" width="150" height="150"></div>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui approve red button">Close</div>
+  </div>
+</div>
+</template>
+
